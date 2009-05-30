@@ -1,6 +1,3 @@
-CouchDB = Origin mimic
-CouchDB Database = Origin mimic
-
 CouchDB Database do(
 
   exists? = method(
