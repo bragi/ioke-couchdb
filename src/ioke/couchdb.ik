@@ -1,9 +1,5 @@
 CouchDB Database do(
 
-  exists? = method(
-    true
-  )
-  
   create! = method(
   )
   
