@@ -63,7 +63,8 @@ public class CouchdbExtension extends Extension {
 			public Object activate(IokeObject method, IokeObject context,
 					IokeObject message, Object on) throws ControlFlow {
 				Runtime runtime = context.runtime;
-				String url = "http://127.0.0.1:5984/ioke-couchdb-test";
+				String url = Text.getText(IokeObject.getCell(on, message,
+						context, "url"));
 				HttpClient client = new HttpClient();
 				GetMethod httpMethod = new GetMethod(url);
 
@@ -87,7 +88,7 @@ public class CouchdbExtension extends Extension {
 					// Release the connection.
 					httpMethod.releaseConnection();
 				}
-				
+
 				return (statusCode == 200) ? runtime._true : runtime._false;
 			}
 		};
