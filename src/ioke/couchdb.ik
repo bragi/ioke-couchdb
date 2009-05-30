@@ -1,12 +1,3 @@
-CouchDB Database do(
-
-  create! = method(
-  )
-  
-  destroy! = method(
-  )
-)
-
 CouchDB do(
   database = method("Creates representation of database with given url",
     url,
