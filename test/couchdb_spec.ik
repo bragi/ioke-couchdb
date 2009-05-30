@@ -15,8 +15,12 @@ describe(CouchDB,
   )
   
   describe("database!",
-    it("creates database unless it exists",
-      
+    it("creates database when it does not exist",
+      database = Origin mimic
+      database stub!(exists?: false)
+      database mock!(:create!)
+      CouchDB stub!(database: database)
+      CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test")
     )
   )
 )
