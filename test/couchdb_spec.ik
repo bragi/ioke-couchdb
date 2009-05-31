@@ -5,7 +5,7 @@ use("ioke-couchdb-1.0.jar")
 describe(CouchDB,
   describe("database",
     it("creates and destroys the database",
-      database = CouchDB database("http://127.0.0.1:5984/ioke-couchdb-test")
+      database = CouchDB database("http://127.0.0.1:5984/ioke-couchdb-test-1")
       database exists? should be false
       database create!
       database exists? should be true
@@ -20,7 +20,22 @@ describe(CouchDB,
       database stub!(exists?: false)
       database mock!(:create!)
       CouchDB stub!(database: database)
-      CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test")
+      CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test-2")
     )
+  )
+)
+
+describe(CouchDB Database,
+  before(
+    database = CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test-2")
+  )
+  after(
+    database destroy!
+  )
+  
+  it("should save and load object",
+    object = Origin with(name: "Test subject")
+    database save(object)
+    database load(object _id) name should == "Test subject"
   )
 )

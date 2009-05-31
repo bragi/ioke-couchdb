@@ -13,3 +13,13 @@ CouchDB do(
     db
   )
 )
+
+CouchDB Database do(
+  save = method(object,
+    if(object cell?(:_id),
+      update(object),
+      
+      create(object)
+    )
+  )
+)
