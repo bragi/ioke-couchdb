@@ -1,5 +1,6 @@
 
 use("ispec")
+use("ioke-json-1.0.1.jar")
 use("ioke-couchdb-1.0.jar")
 
 describe(CouchDB,
@@ -14,7 +15,7 @@ describe(CouchDB,
     )
   )
   
-  describe("database!",
+  describe("database!", {pending: true},
     it("creates database when it does not exist",
       database = Origin mimic
       database stub!(exists?: false)
@@ -35,7 +36,7 @@ describe(CouchDB Database,
   
   it("should save and load object",
     object = Origin with(name: "Test subject")
-    database save(object)
-    database load(object _id) name should == "Test subject"
+    database saveObject(object)
+    database loadObject(object _id) name should == "Test subject"
   )
 )

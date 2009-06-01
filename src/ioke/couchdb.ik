@@ -15,11 +15,11 @@ CouchDB do(
 )
 
 CouchDB Database do(
-  save = method(object,
+  saveObject = method(object,
     if(object cell?(:_id),
-      update(object),
+      updateObject(object),
       
-      create(object)
+      createObject(object)
     )
   )
 )
