@@ -1,6 +1,5 @@
 
 use("ispec")
-use("ioke-json-1.0.1.jar")
 use("ioke-couchdb-1.0.jar")
 
 describe(CouchDB,
