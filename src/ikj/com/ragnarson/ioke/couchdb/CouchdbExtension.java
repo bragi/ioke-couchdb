@@ -22,6 +22,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpMethodParams;
@@ -38,21 +39,18 @@ public class CouchdbExtension extends Extension {
 
     @Override
     public void init(Runtime runtime) throws ControlFlow {
-        IokeObject couchDB = mimicOrigin(runtime, "CouchDB",
-                "CouchDB provides access to CouchDB instance");
-        IokeObject database = mimicOrigin(runtime, "CouchDB Database",
-                "Represents a single CouchDB instance");
-        runtime.ground.setCell("CouchDB", couchDB);
-        couchDB.setCell("Database", database);
-
-        database.registerMethod(runtime.newNativeMethod(Exists.DOC,
-                new Exists()));
-        database.registerMethod(runtime.newNativeMethod(Create.DOC,
-                new Create()));
-        database.registerMethod(runtime.newNativeMethod(Destroy.DOC,
-                new Destroy()));
-        database.registerMethod(runtime.newNativeMethod(CreateObject.DOC,
-                new CreateObject()));
+        IokeObject resource = mimicOrigin(runtime, "Resource",
+                "represents a HTTP resource with given URL and representation");
+        runtime.ground.setCell("Resource", resource);
+        
+        resource.registerMethod(runtime.newNativeMethod(Get.DOC,
+                new Get()));
+        resource.registerMethod(runtime.newNativeMethod(Put.DOC,
+                new Put()));
+        resource.registerMethod(runtime.newNativeMethod(Delete.DOC,
+                new Delete()));
+        resource.registerMethod(runtime.newNativeMethod(Post.DOC,
+                new Post()));
     }
 
     private IokeObject mimicOrigin(Runtime runtime, String kind,
@@ -63,66 +61,82 @@ public class CouchdbExtension extends Extension {
         return mimic;
     }
 
-    private class Create extends NativeMethod.WithNoArguments {
-        public static final String DOC = "creates database";
+    private class Get extends NativeMethod.WithNoArguments {
+        public static final String DOC = "executes GET request on resource";
 
-        public Create() {
-            super("create!");
+        public Get() {
+            super("get");
         }
 
         @Override
         public Object activate(IokeObject method, IokeObject context,
                 IokeObject message, Object on) throws ControlFlow {
             Runtime runtime = context.runtime;
-            String url = Text.getText(IokeObject.perform((IokeObject)on, context, runtime.newMessage("url")));
-            HttpClient client = new HttpClient();
-            PutMethod httpMethod = new PutMethod(url);
-
-            httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-                    new DefaultHttpMethodRetryHandler(3, false));
-            int statusCode = 0;
-
-            try {
-                // Execute the method.
-                statusCode = client.executeMethod(httpMethod);
-            } catch (HttpException e) {
-                System.err.println("Fatal protocol violation: "
-                        + e.getMessage());
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.err.println("Fatal transport error: " + e.getMessage());
-                e.printStackTrace();
-            } finally {
-                // Release the connection.
-                httpMethod.releaseConnection();
-            }
-
-            return (statusCode == 200) ? runtime._true : runtime._false;
-        }
-    }
-
-    private class Exists extends NativeMethod.WithNoArguments {
-        public static final String DOC = "returns true if database exists, false otherwise";
-
-        public Exists() {
-            super("exists?");
-        }
-
-        @Override
-        public Object activate(IokeObject method, IokeObject context,
-                IokeObject message, Object on) throws ControlFlow {
-            Runtime runtime = context.runtime;
-            String url = Text.getText(IokeObject.perform((IokeObject)on, context, runtime.newMessage("url")));
+            IokeObject resource = (IokeObject)on;
+            String url = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("url")));
             HttpClient client = new HttpClient();
             GetMethod httpMethod = new GetMethod(url);
 
             httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                     new DefaultHttpMethodRetryHandler(3, false));
             int statusCode = 0;
+            String representation = "";
 
             try {
                 // Execute the method.
                 statusCode = client.executeMethod(httpMethod);
+                representation = httpMethod.getResponseBodyAsString();
+            } catch (HttpException e) {
+                System.err.println("Fatal protocol violation: "
+                        + e.getMessage());
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.err.println("Fatal transport error: " + e.getMessage());
+                e.printStackTrace();
+            } finally {
+                // Release the connection.
+                httpMethod.releaseConnection();
+            }
+            
+            resource.setCell("result", runtime.newNumber(statusCode));
+            resource.setCell("representation", runtime.newText(representation));
+
+            return resource;
+        }
+    }
+
+    private class Put extends NativeMethod.WithNoArguments {
+        public static final String DOC = "executes PUT request on resource";
+
+        public Put() {
+            super("put");
+        }
+
+        @Override
+        public Object activate(IokeObject method, IokeObject context,
+                IokeObject message, Object on) throws ControlFlow {
+            Runtime runtime = context.runtime;
+            IokeObject resource = (IokeObject)on;
+            String url = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("url")));
+            HttpClient client = new HttpClient();
+            PutMethod httpMethod = new PutMethod(url);
+
+            httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+                    new DefaultHttpMethodRetryHandler(3, false));
+            int statusCode = 0;
+            String representation = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("representation")));
+            String mimeType = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("mimeType")));
+            
+            try {
+                httpMethod.setRequestEntity(new StringRequestEntity(
+                        representation, mimeType, "utf-8"));
+            } catch (UnsupportedEncodingException e1) {
+            }
+
+            try {
+                // Execute the method.
+                statusCode = client.executeMethod(httpMethod);
+                representation = httpMethod.getResponseBodyAsString();
             } catch (HttpException e) {
                 System.err.println("Fatal protocol violation: "
                         + e.getMessage());
@@ -135,32 +149,38 @@ public class CouchdbExtension extends Extension {
                 httpMethod.releaseConnection();
             }
 
-            return (statusCode == 200) ? runtime._true : runtime._false;
+            resource.setCell("result", runtime.newNumber(statusCode));
+            resource.setCell("representation", runtime.newText(representation));
+
+            return resource;
         }
     }
 
-    private class Destroy extends NativeMethod.WithNoArguments {
-        public static final String DOC = "destroys database and all it's data";
+    private class Delete extends NativeMethod.WithNoArguments {
+        public static final String DOC = "executes DELETE request on resource";
 
-        public Destroy() {
-            super("destroy!");
+        public Delete() {
+            super("delete");
         }
 
         @Override
         public Object activate(IokeObject method, IokeObject context,
                 IokeObject message, Object on) throws ControlFlow {
             Runtime runtime = context.runtime;
-            String url = Text.getText(IokeObject.perform((IokeObject)on, context, runtime.newMessage("url")));
+            IokeObject resource = (IokeObject)on;
+            String url = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("url")));
             HttpClient client = new HttpClient();
             DeleteMethod httpMethod = new DeleteMethod(url);
 
             httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                     new DefaultHttpMethodRetryHandler(3, false));
             int statusCode = 0;
+            String representation = "";
 
             try {
                 // Execute the method.
                 statusCode = client.executeMethod(httpMethod);
+                representation = httpMethod.getResponseBodyAsString();
             } catch (HttpException e) {
                 System.err.println("Fatal protocol violation: "
                         + e.getMessage());
@@ -173,51 +193,45 @@ public class CouchdbExtension extends Extension {
                 httpMethod.releaseConnection();
             }
 
-            return (statusCode == 200) ? runtime._true : runtime._false;
+            resource.setCell("result", runtime.newNumber(statusCode));
+            resource.setCell("representation", runtime.newText(representation));
+
+            return resource;
         }
     }
 
-    private static class CreateObject extends NativeMethod {
-        public static final String DOC = "creates database entry for given JSON representation";
+    private class Post extends NativeMethod.WithNoArguments {
+        public static final String DOC = "executes POST request on resource";
 
-        public static final DefaultArgumentsDefinition ARGUMENTS = DefaultArgumentsDefinition
-                .builder().withRequiredPositional("object").getArguments();
-
-        @Override
-        public DefaultArgumentsDefinition getArguments() {
-            return ARGUMENTS;
-        }
-
-        public CreateObject() {
-            super("createObject");
+        public Post() {
+            super("post");
         }
 
         @Override
         public Object activate(IokeObject method, IokeObject context,
                 IokeObject message, Object on) throws ControlFlow {
-            List<Object> args = new ArrayList<Object>();
-            getArguments().getEvaluatedArguments(context, message, on, args,
-                    new HashMap<String, Object>());
             Runtime runtime = context.runtime;
-            String url = Text.getText(IokeObject.perform((IokeObject)on, context, runtime.newMessage("url")));
-            IokeObject object = (IokeObject)args.get(0);
-            String jsonRepresentation = Text.getText(IokeObject.perform((IokeObject)object, context, runtime.newMessage("toJson")));
+            IokeObject resource = (IokeObject)on;
+            String url = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("url")));
             HttpClient client = new HttpClient();
-            PutMethod put = new PutMethod(url);
+            PostMethod httpMethod = new PostMethod(url);
 
-            put.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+            httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                     new DefaultHttpMethodRetryHandler(3, false));
+            int statusCode = 0;
+            String representation = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("representation")));
+            String mimeType = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("mimeType")));
+            
             try {
-                put.setRequestEntity(new StringRequestEntity(
-                        jsonRepresentation, "application/json", "utf-8"));
+                httpMethod.setRequestEntity(new StringRequestEntity(
+                        representation, mimeType, "utf-8"));
             } catch (UnsupportedEncodingException e1) {
             }
 
-            int statusCode = 0;
-
             try {
                 // Execute the method.
-                statusCode = client.executeMethod(put);
+                statusCode = client.executeMethod(httpMethod);
+                representation = httpMethod.getResponseBodyAsString();
             } catch (HttpException e) {
                 System.err.println("Fatal protocol violation: "
                         + e.getMessage());
@@ -227,11 +241,14 @@ public class CouchdbExtension extends Extension {
                 e.printStackTrace();
             } finally {
                 // Release the connection.
-                put.releaseConnection();
+                httpMethod.releaseConnection();
             }
 
-            return (statusCode < 300) ? runtime._true : runtime._false;
-        }
+            resource.setCell("result", runtime.newNumber(statusCode));
+            resource.setCell("representation", runtime.newText(representation));
 
+            return resource;
+        }
     }
+
 }
