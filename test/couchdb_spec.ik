@@ -46,7 +46,3 @@ describe(CouchDB Database,
     database loadObject(id) should be nil
   )
 )
-
-Resource after(:delete) << macro(
-  inspect println
-)
