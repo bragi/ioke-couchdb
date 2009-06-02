@@ -34,9 +34,19 @@ describe(CouchDB Database,
     database destroy!
   )
   
-  it("should save and load object",
+  it("should provide CRUD for object",
     object = Origin with(name: "Test subject")
     database saveObject(object)
-    database loadObject(object _id) name should == "Test subject"
+    id = object _id
+    database loadObject(id) name should == "Test subject"
+    object name = "Another name"
+    database saveObject(object)
+    database loadObject(id) name should == "Another name"
+    database deleteObject(object) should be true
+    database loadObject(id) should be nil
   )
+)
+
+Resource after(:delete) << macro(
+  inspect println
 )
