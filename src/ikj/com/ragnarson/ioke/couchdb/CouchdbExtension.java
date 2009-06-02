@@ -3,7 +3,6 @@
  */
 package com.ragnarson.ioke.couchdb;
 
-import ioke.lang.DefaultArgumentsDefinition;
 import ioke.lang.IokeObject;
 import ioke.lang.NativeMethod;
 import ioke.lang.Runtime;
@@ -13,9 +12,6 @@ import ioke.lang.extensions.Extension;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
 import org.apache.commons.httpclient.HttpClient;
@@ -43,6 +39,10 @@ public class CouchdbExtension extends Extension {
                 "represents a HTTP resource with given URL and representation");
         runtime.ground.setCell("Resource", resource);
         
+        resource.setCell("mimeType", runtime.newText("application/json"));
+        resource.setCell("representation", runtime.nil);
+        resource.setCell("result", runtime.newNumber(0));
+
         resource.registerMethod(runtime.newNativeMethod(Get.DOC,
                 new Get()));
         resource.registerMethod(runtime.newNativeMethod(Put.DOC,
@@ -123,20 +123,23 @@ public class CouchdbExtension extends Extension {
 
             httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                     new DefaultHttpMethodRetryHandler(3, false));
+            String stringRepresentation = "";
             int statusCode = 0;
-            String representation = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("representation")));
+            Object representation = IokeObject.perform(resource, context, runtime.newMessage("representation"));
             String mimeType = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("mimeType")));
             
             try {
-                httpMethod.setRequestEntity(new StringRequestEntity(
-                        representation, mimeType, "utf-8"));
+            	if(representation != runtime.nil) {
+                    httpMethod.setRequestEntity(new StringRequestEntity(
+                    		Text.getText(representation), mimeType, "utf-8"));
+            	}
             } catch (UnsupportedEncodingException e1) {
             }
 
             try {
                 // Execute the method.
                 statusCode = client.executeMethod(httpMethod);
-                representation = httpMethod.getResponseBodyAsString();
+                stringRepresentation = httpMethod.getResponseBodyAsString();
             } catch (HttpException e) {
                 System.err.println("Fatal protocol violation: "
                         + e.getMessage());
@@ -150,7 +153,7 @@ public class CouchdbExtension extends Extension {
             }
 
             resource.setCell("result", runtime.newNumber(statusCode));
-            resource.setCell("representation", runtime.newText(representation));
+            resource.setCell("representation", runtime.newText(stringRepresentation));
 
             return resource;
         }
@@ -219,19 +222,22 @@ public class CouchdbExtension extends Extension {
             httpMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
                     new DefaultHttpMethodRetryHandler(3, false));
             int statusCode = 0;
-            String representation = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("representation")));
+            String stringRepresentation = "";
+            Object representation = IokeObject.perform(resource, context, runtime.newMessage("representation"));
             String mimeType = Text.getText(IokeObject.perform(resource, context, runtime.newMessage("mimeType")));
             
             try {
-                httpMethod.setRequestEntity(new StringRequestEntity(
-                        representation, mimeType, "utf-8"));
+            	if(representation != runtime.nil) {
+                    httpMethod.setRequestEntity(new StringRequestEntity(
+                    		Text.getText(representation), mimeType, "utf-8"));
+            	}
             } catch (UnsupportedEncodingException e1) {
             }
 
             try {
                 // Execute the method.
                 statusCode = client.executeMethod(httpMethod);
-                representation = httpMethod.getResponseBodyAsString();
+                stringRepresentation = httpMethod.getResponseBodyAsString();
             } catch (HttpException e) {
                 System.err.println("Fatal protocol violation: "
                         + e.getMessage());
@@ -245,7 +251,7 @@ public class CouchdbExtension extends Extension {
             }
 
             resource.setCell("result", runtime.newNumber(statusCode));
-            resource.setCell("representation", runtime.newText(representation));
+            resource.setCell("representation", runtime.newText(stringRepresentation));
 
             return resource;
         }

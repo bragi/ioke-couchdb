@@ -31,7 +31,7 @@ describe(CouchDB Database,
     database = CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test-2")
   )
   after(
-    database destroy!
+    ; database destroy!
   )
   
   it("should save and load object",
@@ -39,4 +39,8 @@ describe(CouchDB Database,
     database saveObject(object)
     database loadObject(object _id) name should == "Test subject"
   )
+)
+
+Resource after([:get, :put, :delete, :post]) << method(
+  inspect println
 )

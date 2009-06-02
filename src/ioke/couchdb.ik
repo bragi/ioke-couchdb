@@ -1,13 +1,3 @@
-Resource do(
-  success? = method(
-    result => 200 && result < 300
-  )
-  
-  missing? = method(
-    result == 404
-  )
-)
-
 CouchDB = Origin mimic
 CouchDB Database = Origin mimic
 
@@ -29,27 +19,32 @@ CouchDB do(
 
 CouchDB Database do(
   create! = method(
-    Resource mimic(url: url) put success?
+    Resource with(url: url) put success?
   )
   
   destroy! = method(
-    Resource mimic(url: url) delete success?
+    Resource with(url: url) delete success?
   )
   
   exists? = method(
-    Resource mimic(url: url) get success?
+    Resource with(url: url) get success?
   )
   
   createObject = method(object,
-    Resource mimic(url: url, representation: object toJson) put success?
+    resource = Resource with(url: url, representation: object toJson)
+    resource post
+    response = resource toIoke
+    object _id = response["_id"]
+    object _rev = response["_rev"]
+    resource success?
   )
 
   loadObject = method(id,
-    JSON fromText(Resource mimic(url: "#{url}/#{id}") get representation)
+    Resource with(url: "#{url}/#{id}") get toIoke
   )
   
   updateObject = method(object,
-    Resource mimic(url: "#{url}/#{object _id}", representation: object toJson) post success?
+    Resource with(url: "#{url}/#{object _id}", representation: object toJson) put success?
   )
 
   saveObject = method(object,
