@@ -12,6 +12,6 @@ Resource do(
   )
   
   inspect = method(
-    "Resource(result: #{result}, mimeType: #{mimeType}, representation: #{representation})"
+    "Resource(result: #{result}, mimeType: #{mimeType}, url: #{url}, representation: #{representation})"
   )
 )

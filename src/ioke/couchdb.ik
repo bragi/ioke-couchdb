@@ -34,8 +34,8 @@ CouchDB Database do(
     resource = Resource with(url: url, representation: object toJson)
     resource post
     response = resource toIoke
-    object _id = response["_id"]
-    object _rev = response["_rev"]
+    object _id = response["id"]
+    object _rev = response["rev"]
     resource success?
   )
 
