@@ -1,3 +1,5 @@
 .DS_Store
 build
 lib/ioke-couchdb*.jar
+/*.ik
+
