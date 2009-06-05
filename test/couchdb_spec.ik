@@ -52,4 +52,13 @@ describe(CouchDB Database,
     )
     database all length should == 5
   )
+  
+  it("should return temporary view",
+    (1..5) each(i, database saveObject(Origin with(color: "color-#{i}", value: i)))
+    database temporaryView(map: #[
+      function(doc) {
+        emit(doc.color, doc.value);
+      }
+    ]) length should == 5
+  )
 )

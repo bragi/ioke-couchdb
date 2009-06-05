@@ -48,6 +48,10 @@ CouchDB Database do(
     resource
   )
   
+  deleteObject = method(object,
+    Resource with(url: "#{url}/#{object _id}?rev=#{object _rev}") delete
+  )
+  
   get = method(url,
     resource = Resource with(url: url) get
     if(resource success?,
@@ -68,6 +72,10 @@ CouchDB Database do(
     resource
   )
 
+  temporaryView = method(map:, reduce: nil,
+    Resource with(url: "#{url}/_temp_view", representation: dict(map: map) toJson) post toIoke["rows"]
+  )
+
   saveObject = method(object,
     if(object cell?(:_id),
       updateObject(object),
@@ -76,7 +84,4 @@ CouchDB Database do(
     )
   )
 
-  deleteObject = method(object,
-    Resource with(url: "#{url}/#{object _id}?rev=#{object _rev}") delete
-  )
 )
