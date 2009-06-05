@@ -35,13 +35,22 @@ describe(CouchDB Database,
   
   it("should provide CRUD for object",
     object = Origin with(name: "Test subject")
-    database saveObject(object)
+    database saveObject(object) should be success
     id = object _id
     database loadObject(id) name should == "Test subject"
     object name = "Another name"
-    database saveObject(object)
+    database saveObject(object) should be success
     database loadObject(id) name should == "Another name"
-    database deleteObject(object) should be true
+    database deleteObject(object) should be success
     database loadObject(id) should be nil
+  )
+
+  
+  it("should list all entries",
+    (1..5) each(i,
+      database saveObject(Origin with(name: "Test subject", value: i)) should be success
+    )
+    database all println
+    database all length should == 5
   )
 )

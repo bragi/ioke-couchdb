@@ -18,6 +18,15 @@ CouchDB do(
 )
 
 CouchDB Database do(
+  all = method(
+    collection = get("#{url}/_all_docs")
+    if(collection,
+      collection["rows"],
+      
+      list
+    )
+  )
+
   create! = method(
     Resource with(url: url) put success?
   )
@@ -36,15 +45,19 @@ CouchDB Database do(
     response = resource toIoke
     object _id = response["id"]
     object _rev = response["rev"]
-    resource success?
+    resource
   )
-
-  loadObject = method(id,
-    resource = Resource with(url: "#{url}/#{id}") get
+  
+  get = method(url,
+    resource = Resource with(url: url) get
     if(resource success?,
       resource toIoke,
       nil
     )
+  )
+
+  loadObject = method(id,
+    get("#{url}/#{id}")
   )
 
   updateObject = method(object,
@@ -52,7 +65,7 @@ CouchDB Database do(
     resource put 
     response = resource toIoke
     object _rev = response["rev"]
-    resource success?
+    resource
   )
 
   saveObject = method(object,
@@ -64,6 +77,6 @@ CouchDB Database do(
   )
 
   deleteObject = method(object,
-    Resource with(url: "#{url}/#{object _id}?rev=#{object _rev}") delete success?
+    Resource with(url: "#{url}/#{object _id}?rev=#{object _rev}") delete
   )
 )

@@ -12,7 +12,7 @@ describe(CouchDB Persistent,
   )
   it("should provide CRUD operations",
     apple = Apple with(color: "green")
-    apple save should be true
+    apple save should be success
     
     greenApple = Apple find(apple _id)
     greenApple kind?("Apple") should be true
@@ -20,13 +20,13 @@ describe(CouchDB Persistent,
     greenApple color should == "green"
     
     greenApple color = "red"
-    greenApple save should be true
+    greenApple save should be success
     
     redApple = Apple find(greenApple _id)
     redApple color should == "red"
     redApple _id should == apple _id
     
-    redApple delete should be true
+    redApple delete should be success
     
     Apple find(redApple _id) should be nil
   )

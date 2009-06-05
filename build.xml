@@ -10,7 +10,7 @@
 
   <path id="build.classpath">
     <pathelement location="${ioke.dir}/lib/ioke.jar" />
-    <pathelement location="${ioke-json.dir}/ioke-json-1.0.1.jar" />
+    <pathelement location="${ioke-json.dir}/ioke-json-1.0.2.jar" />
     <fileset dir="${lib.release.dir}" includes="*.jar"/>
     <fileset dir="${lib.runtime.dir}" includes="*.jar"/>
   </path>

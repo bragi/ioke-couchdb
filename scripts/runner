@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ioke -I lib -I lib/runtime -I ../ioke-json/lib "$@"
