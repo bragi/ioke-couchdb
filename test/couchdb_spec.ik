@@ -50,7 +50,6 @@ describe(CouchDB Database,
     (1..5) each(i,
       database saveObject(Origin with(name: "Test subject", value: i)) should be success
     )
-    database all println
     database all length should == 5
   )
 )
