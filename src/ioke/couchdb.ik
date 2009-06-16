@@ -35,7 +35,11 @@ CouchDB Database do(
     Resource with(url: url) delete success?
   )
 
-  exists? = method(
+  exists? = method(id nil,
+    url = if(id,
+      "#{url}/#{id}",
+      url
+    )
     Resource with(url: url) get success?
   )
 

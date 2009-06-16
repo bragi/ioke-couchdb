@@ -4,7 +4,7 @@ use("ioke-couchdb-1.0.jar")
 
 AppleView = CouchDB DesignDocument with(name: "apples")
 AppleView do(
-  view(:byColor, map: "emit(doc.color, doc)")
+  view(:by_color, map: "emit(doc.color, doc)")
 )
 
 describe(CouchDB DesignDocument,
@@ -21,7 +21,7 @@ describe(CouchDB DesignDocument,
     before(
       testView = CouchDB DesignDocument with(name: "testView")
       testView do(
-        view(:byColor, map: "emit(doc.color, doc)")
+        view(:by_color, map: "emit(doc.color, doc)")
       )
     )
 
@@ -32,10 +32,17 @@ describe(CouchDB DesignDocument,
     it("should have map",
       testView views first map should == "emit(doc.color, doc)"
     )
+    
+    describe("and providing dict representation",
+      it("should have views",
+        testView asDict at(:views) should not be nil
+      )
+    )
   )
   
   it("should allow to create and destroy itself",
     AppleView create inspect println ;should be success
+    AppleView exists? should be true
     AppleView delete inspect println ;should be success
   )
   
@@ -45,7 +52,7 @@ describe(CouchDB DesignDocument,
     )
     it("should allow to query one of views",
       5 times(i, database saveObject(dict(color: "color-#{i}")))
-      AppleView byColor length should == 5
+      AppleView by_color length should == 5
     )
   )
 )

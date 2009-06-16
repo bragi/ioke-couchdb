@@ -4,14 +4,15 @@ CouchDB DesignDocument View = Origin mimic
 CouchDB DesignDocument do(
   asDict = method(
     d = dict(
-      id: _id,
+      _id: _id,
       language: "javascript"
     )
     if(cell?(:rev),
-      d[:rev] = _rev
+      d[:_rev] = _rev
     )
     v = dict
     views each(view, v[view name] = view asDict)
+    d[:views] = v
     d
   )
 
@@ -25,6 +26,10 @@ CouchDB DesignDocument do(
 
   delete = method(
     database deleteObject(_id: _id, _rev: _rev)
+  )
+  
+  exists? = method(
+    database exists?(_id)
   )
 
   getView = method(view,
