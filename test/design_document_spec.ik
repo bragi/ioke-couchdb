@@ -4,7 +4,7 @@ use("ioke-couchdb-1.0.jar")
 
 AppleView = CouchDB DesignDocument with(name: "apples")
 AppleView do(
-  view(:by_color, map: "emit(doc.color, doc)")
+  view("by_color", map: "emit(doc.color, doc)")
 )
 
 describe(CouchDB DesignDocument,
@@ -21,7 +21,7 @@ describe(CouchDB DesignDocument,
     before(
       testView = CouchDB DesignDocument with(name: "testView")
       testView do(
-        view(:by_color, map: "emit(doc.color, doc)")
+        view("by_color", map: "emit(doc.color, doc)")
       )
     )
 
@@ -35,20 +35,20 @@ describe(CouchDB DesignDocument,
     
     describe("and providing dict representation",
       it("should have views",
-        testView asDict at(:views) should not be nil
+        testView asDict at("views") should not be nil
       )
     )
   )
   
-  it("should allow to create and destroy itself",
-    AppleView create inspect println ;should be success
+  it("should allow to save and destroy itself",
+    AppleView save inspect println ;should be success
     AppleView exists? should be true
     AppleView delete inspect println ;should be success
   )
   
-  describe("when created",
+  describe("when saved",
     before(
-      AppleView create
+      AppleView save
     )
     it("should allow to query one of views",
       5 times(i, database saveObject(dict(color: "color-#{i}")))
@@ -64,15 +64,15 @@ describe(CouchDB DesignDocument View,
     )
 
     it("should skip name",
-      view asDict key?(:name) should be false
+      view asDict key?("name") should be false
     )
     
     it("should have map",
-      view asDict key?(:map) should be true
+      view asDict key?("map") should be true
     )
 
     it("should have reduce",
-      view asDict key?(:reduce) should be true
+      view asDict key?("reduce") should be true
     )
     
     it("should skip reduce when empty",

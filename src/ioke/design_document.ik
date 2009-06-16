@@ -4,22 +4,21 @@ CouchDB DesignDocument View = Origin mimic
 CouchDB DesignDocument do(
   asDict = method(
     d = dict(
-      _id: _id,
-      language: "javascript"
+      "_id" => _id,
+      "language" => "javascript"
     )
     if(cell?(:rev),
-      d[:_rev] = _rev
+      d["_rev"] = _rev
     )
     v = dict
     views each(view, v[view name] = view asDict)
-    d[:views] = v
+    d["views"] = v
     d
   )
 
-  create = method(
+  save = method(
     d = self asDict
-    d inspect println
-    resource = database createObject(d)
+    resource = database saveObject(d)
     self _rev = d _rev
     resource
   )
@@ -58,9 +57,9 @@ CouchDB DesignDocument do(
 CouchDB DesignDocument View do(
   asDict = method(
     if(reduce,
-      dict(map: mapFunction, reduce: reduceFunction),
+      dict("map" => mapFunction, "reduce" => reduceFunction),
 
-      dict(map: mapFunction)
+      dict("map" => mapFunction)
     )
   )
 
