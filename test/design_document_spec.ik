@@ -41,9 +41,9 @@ describe(CouchDB DesignDocument,
   )
   
   it("should allow to save and destroy itself",
-    AppleView save inspect println ;should be success
+    AppleView save should be success
     AppleView exists? should be true
-    AppleView delete inspect println ;should be success
+    AppleView delete should be success
   )
   
   describe("when saved",
@@ -52,7 +52,7 @@ describe(CouchDB DesignDocument,
     )
     it("should allow to query one of views",
       5 times(i, database saveObject(dict(color: "color-#{i}")))
-      AppleView by_color length should == 5
+      AppleView by_color["rows"] length should == 5
     )
   )
 )
@@ -81,3 +81,10 @@ describe(CouchDB DesignDocument View,
     )
   )
 )
+
+; Resource around(:get, :put, :post, :delete) << macro(
+;   "Before #{call message name}: #{call receiver inspect}" println
+;   result = aspectCall
+;   "After #{call message name}: #{call receiver inspect}" println
+;   result
+; )

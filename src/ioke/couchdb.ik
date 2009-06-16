@@ -54,8 +54,8 @@ CouchDB Database do(
   
   deleteObject = method(object nil, _id: nil, _rev: nil,
     if(object,
-      _id = getValue(object, :_id)
-      _rev = getValue(object, :_rev)
+      _id = id(object)
+      _rev = rev(object)
     )
     Resource with(url: "#{url}/#{_id}?rev=#{_rev}") delete
   )
@@ -68,10 +68,21 @@ CouchDB Database do(
     )
   )
   
+  id = method(object,
+    getValue(object, "_id")
+  )
+  
+  rev = method(object,
+    getValue(object, "_rev")
+  )
+  
   getValue = method(object, name,
     if(object kind?("Dict"),
       object[name],
-      object send(name)
+      
+      if(object cell?(name),
+        object send(name)
+      )
     )
   )
 
@@ -80,7 +91,7 @@ CouchDB Database do(
   )
 
   updateObject = method(object,
-    resource = Resource with(url: "#{url}/#{object _id}", representation: object toJson) 
+    resource = Resource with(url: "#{url}/#{id(object)}", representation: object toJson)
     resource put 
     response = resource toIoke
     object _rev = response["rev"]
@@ -92,11 +103,10 @@ CouchDB Database do(
   )
 
   saveObject = method(object,
-    if(object cell?(:_id),
+    if(id(object),
       updateObject(object),
 
       createObject(object)
     )
   )
-
 )
