@@ -17,6 +17,7 @@ CouchDB DesignDocument do(
 
   create = method(
     d = self asDict
+    d inspect println
     resource = database createObject(d)
     self _rev = d _rev
     resource
@@ -51,19 +52,19 @@ CouchDB DesignDocument do(
 
 CouchDB DesignDocument View do(
   asDict = method(
-    mapFunction = "function(doc) {
-  #{map}
-}"
-
     if(reduce,
-      reduceFunction = "function(keys, values, rereduce) {
-  #{reduce}
-}"
       dict(map: mapFunction, reduce: reduceFunction),
 
       dict(map: mapFunction)
     )
   )
 
+  mapFunction = method(
+    "function(doc) {#{map}}"
+  )
+  
+  reduceFunction = method(
+    "function(keys, values, rereduce) {#{reduce}}"
+  )
 )
 
