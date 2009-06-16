@@ -48,8 +48,12 @@ CouchDB Database do(
     resource
   )
   
-  deleteObject = method(object,
-    Resource with(url: "#{url}/#{object _id}?rev=#{object _rev}") delete
+  deleteObject = method(object nil, _id: nil, _rev: nil,
+    if(object,
+      _id = getValue(object, :_id)
+      _rev = getValue(object, :_rev)
+    )
+    Resource with(url: "#{url}/#{_id}?rev=#{_rev}") delete
   )
   
   get = method(url,
@@ -57,6 +61,13 @@ CouchDB Database do(
     if(resource success?,
       resource toIoke,
       nil
+    )
+  )
+  
+  getValue = method(object, name,
+    if(object kind?("Dict"),
+      object[name],
+      object send(name)
     )
   )
 
