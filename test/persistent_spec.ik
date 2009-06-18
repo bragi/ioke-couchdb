@@ -5,7 +5,7 @@ Apple = CouchDB Persistent mimic
 
 describe(CouchDB Persistent,
   before(
-    CouchDB Persistent database = CouchDB database!(("http://127.0.0.1:5984/ioke-couchdb-test-persistent"))
+    CouchDB Persistent database = CouchDB database!("http://127.0.0.1:5984/ioke-couchdb-test-persistent")
   )
 
   after(

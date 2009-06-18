@@ -86,8 +86,12 @@ CouchDB Database do(
     )
   )
 
-  loadObject = method(id,
-    get("#{url}/#{id}")
+  loadObject = method(id, params {},
+    queryString = params map(pair, "#{pair key}=#{pair value}") join("&")
+    if(queryString empty?,
+      get("#{url}/#{id}"),
+      get("#{url}/#{id}?#{queryString}")
+    )
   )
 
   updateObject = method(object,

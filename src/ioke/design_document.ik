@@ -31,8 +31,8 @@ CouchDB DesignDocument do(
     database exists?(_id)
   )
 
-  getView = method(view,
-    database loadObject(view url)
+  getView = method(view, params,
+    database loadObject(view url, params)
   )
 
   initialize = method(
@@ -48,8 +48,8 @@ CouchDB DesignDocument do(
   view = method(name, map:, reduce: nil,
     v = View with(name: name, map: map, reduce: reduce, url: "#{url}/_view/#{name}")
     views << v
-    self cell(name) = fnx(
-      getView(v)
+    self cell(name) = fnx(+:params,
+      getView(v, params)
     )
   )
 )

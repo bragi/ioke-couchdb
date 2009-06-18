@@ -49,10 +49,13 @@ describe(CouchDB DesignDocument,
   describe("when saved",
     before(
       AppleView save
+      5 times(i, database saveObject(dict(color: "color-#{i}")))
     )
     it("should allow to query one of views",
-      5 times(i, database saveObject(dict(color: "color-#{i}")))
       AppleView by_color["rows"] length should == 5
+    )
+    it("should allow to query view by key",
+    AppleView by_color(key: "color-1")["rows"] length should == 1
     )
   )
 )
